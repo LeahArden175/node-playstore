@@ -1,53 +1,58 @@
-/* eslint-disable strict */
-const playdata = require('./playstore.js');
+
 const express = require('express');
 const morgan = require('morgan');
 
 const app = express();
 
-app.use(morgan('common'));
+app.use(morgan('dev'));
 
-app.listen(8000, () => {
-  console.log('Server started on 8000');
-});
+const apps = require('./playstore')
 
 app.get('/apps', (req, res) => {
-   
-  const { genre = " ", sort } = req.query;
+  const {sort, genres = ''} = req.query;
 
   if (sort) {
-    if (!['rating', 'app'].includes(sort)) {
+    if (!['Rating', 'App'].includes(sort)) {
       return res
         .status(400)
-        .send('Apps can only only be sorted by rating or app')
+        .send('Apps can only only be sorted by Rating or App')
     }
   }
 
-  if (genre) {
-    if (!['action', 'puzzle', 'strategy', 'casual', 'arcade', 'card']
-      .includes(genre)) {
+  if (genres) {
+    if (!['Action', 'Puzzle', 'Strategy', 'Casual', 'Arcade', 'Card']
+      .includes(genres)) {
       return res
         .status(400)
         .send('App genre must be one of the following: Action, Puzzle, Strategy, Casual, Arcade, or Card.')
     }
   }
 
-  if (sort === 'rating' || sort === 'app') {
-        sorting = sort.charAt(0).toUpperCase() + sort.slice(1);
-        playdata.sort((a,b) => {
-            return a[sorting] > b[sorting] ? 1: a[sorting]< b[sorting] ? -1: 0;
-        })
-    }
-
-  
-    let results = playdata
+  let results = apps
     .filter(app => 
       app
         .Genres
         .toLowerCase()
-        .includes(genre.toLowerCase())
+        .includes(genres.toLowerCase())
     )
 
-  res.json(results);
+  if (sort === 'Rating') {
+    results
+      .sort((a, b) => {
+        return a[sort] < b[sort] ? 1 : a[sort] > b[sort] ? -1 : 0;
+      })
+  }
+
+  if (sort === 'App') {
+    results
+      .sort((a, b) => {
+        return a[sort] > b[sort] ? 1 : a[sort] < b[sort] ? -1 : 0;
+      })
+  }
+
+  res
+    .json(results)
 
 });
+
+module.exports = app;
