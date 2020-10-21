@@ -13,9 +13,24 @@ app.listen(8000, () => {
 
 app.get('/apps', (req, res) => {
    
-  const { genres, sort } = req.query;
+  const { genre = " ", sort } = req.query;
 
+  if (sort) {
+    if (!['rating', 'app'].includes(sort)) {
+      return res
+        .status(400)
+        .send('Apps can only only be sorted by rating or app')
+    }
+  }
 
+  if (genre) {
+    if (!['action', 'puzzle', 'strategy', 'casual', 'arcade', 'card']
+      .includes(genre)) {
+      return res
+        .status(400)
+        .send('App genre must be one of the following: Action, Puzzle, Strategy, Casual, Arcade, or Card.')
+    }
+  }
 
   if (sort === 'rating' || sort === 'app') {
         sorting = sort.charAt(0).toUpperCase() + sort.slice(1);
@@ -25,38 +40,14 @@ app.get('/apps', (req, res) => {
     }
 
   
-  let results = playdata
-    .filter(appWord =>
-      appWord
-        .App);
-        // .toLowerCase());
-        // .includes(sort.toLowerCase()));
-
-/*
-  if (sort === 'app' || sort === 'genre') {
-    results
-      .sort((a, b) => {
-        
-        return a[sort] > b[sort] ? 1 : a[sort] < b[sort] ? -1 : 0;
-      });
-
-  } else { 
-    results = "Error"  
-  }
-*/
+    let results = playdata
+    .filter(app => 
+      app
+        .Genres
+        .toLowerCase()
+        .includes(genre.toLowerCase())
+    )
 
   res.json(results);
-
-  //   if(sort === 'rating' || sort === 'app') {
-
-
-
-
-
-    
-  //   }
-
-
-
 
 });
